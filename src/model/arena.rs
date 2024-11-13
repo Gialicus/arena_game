@@ -1,27 +1,32 @@
+use std::sync::Arc;
+
+use futures::future::join_all;
+
 use crate::{model::fight::start_fight, utils::generator::generate_random_skill};
 
 use super::character::Character;
 
 pub async fn start_round(players: Vec<Character>) -> Vec<Character> {
+    // Ritorna il singolo giocatore se c'è solo un giocatore (vincitore del torneo)
     if players.len() == 1 {
         return players;
     }
-    if players.len() % 2 != 0 {
-        panic!("Players cant not be Odd")
-    }
 
+    // Crea le coppie di combattimento
     let mut teams = vec![];
     for i in 0..players.len() / 2 {
         let team = (players[i * 2].clone(), players[i * 2 + 1].clone());
         teams.push(team);
     }
 
-    let mut round_winners = vec![];
+    // Avvia i combattimenti in parallelo
+    let mut handles = vec![];
     for (player_one, player_two) in teams {
-        let winner = start_fight(player_one, player_two).await;
-        round_winners.push(winner);
+        handles.push(start_fight(Arc::new(player_one), Arc::new(player_two)));
     }
-    round_winners
+
+    let round_winners = join_all(handles).await;
+    round_winners.iter().map(|c| c.as_ref().clone()).collect()
 }
 
 pub async fn start_tournament(players: Vec<Character>) -> Character {

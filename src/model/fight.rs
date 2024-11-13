@@ -1,4 +1,4 @@
-use std::{ops::Deref, sync::Arc};
+use std::sync::Arc;
 
 use rand::{seq::IteratorRandom, thread_rng};
 use tokio::{sync::mpsc, time};
@@ -43,21 +43,18 @@ async fn character_attack_loop(character: Arc<Character>, opponent: Arc<Characte
     }
 }
 
-pub async fn start_fight(player_one: Character, player_two: Character) -> Character {
-    let player1 = Arc::new(player_one);
-    let player2 = Arc::new(player_two);
-
+pub async fn start_fight(player_one: Arc<Character>, player_two: Arc<Character>) -> Arc<Character> {
     // Avvia le task di combattimento per entrambi i personaggi
-    let player1_task = character_attack_loop(player1.clone(), player2.clone());
-    let player2_task = character_attack_loop(player2.clone(), player1.clone());
+    let player1_task = character_attack_loop(player_one.clone(), player_two.clone());
+    let player2_task = character_attack_loop(player_two.clone(), player_one.clone());
 
     tokio::join!(player1_task, player2_task);
     // Determina il vincitore
-    if player1.is_alive() {
-        println!("{} win!", player1.name);
-        player1.deref().clone()
+    if player_one.is_alive() {
+        println!("{} win!", player_one.name);
+        player_one
     } else {
-        println!("{} win!", player2.name);
-        player2.deref().clone()
+        println!("{} win!", player_two.name);
+        player_two
     }
 }
