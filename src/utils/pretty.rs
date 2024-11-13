@@ -2,7 +2,7 @@ use colored::{ColoredString, Colorize};
 
 use crate::model::{element::Element, skill::Skill};
 
-fn print_by_element(txt: &str, element: &Element) -> ColoredString {
+pub fn print_by_element(txt: &str, element: &Element) -> ColoredString {
     match element {
         Element::Water => txt.blue().bold(),
         Element::Fire => txt.red().bold(),

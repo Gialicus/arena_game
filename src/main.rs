@@ -1,10 +1,9 @@
 mod model;
 mod utils;
 
-use std::sync::Arc;
-
+use colored::Colorize;
 use model::character::Character;
-use model::fight::character_attack_loop;
+use model::fight::start_fight;
 use utils::generator::generate_random_skill;
 
 #[tokio::main]
@@ -24,19 +23,9 @@ async fn main() {
         generate_random_skill(),
     ];
 
-    let player1 = Arc::new(Character::new("Guerriero", 400, skills_player1));
-    let player2 = Arc::new(Character::new("Arciere", 400, skills_player2));
-
-    // Avvia le task di combattimento per entrambi i personaggi
-    let player1_task = character_attack_loop(player1.clone(), player2.clone());
-    let player2_task = character_attack_loop(player2.clone(), player1.clone());
-
-    tokio::join!(player1_task, player2_task);
-
-    // Determina il vincitore
-    if player1.is_alive() {
-        println!("{} vince!", player1.name);
-    } else {
-        println!("{} vince!", player2.name);
-    }
+    let war = Character::new("Guerriero", skills_player1);
+    let archer = Character::new("Arciere", skills_player2);
+    let winner = start_fight(war, archer).await;
+    let end_title = format!("\nThe winner is \n****\n{}\n****\n", winner).cyan();
+    println!("{}", end_title)
 }

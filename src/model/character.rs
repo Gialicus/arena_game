@@ -1,10 +1,13 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    fmt::{self},
+    sync::{Arc, Mutex},
+};
 
 use crate::utils::pretty::print_damage_taken;
 
 use super::skill::Skill;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Character {
     pub name: String,
     pub health: Arc<Mutex<i32>>,
@@ -12,10 +15,10 @@ pub struct Character {
 }
 
 impl Character {
-    pub fn new(name: &str, health: i32, skills: Vec<Skill>) -> Self {
+    pub fn new(name: &str, skills: Vec<Skill>) -> Self {
         Character {
             name: name.to_string(),
-            health: Arc::new(Mutex::new(health)),
+            health: Arc::new(Mutex::new((skills.len() * 100) as i32)),
             skills,
         }
     }
@@ -29,5 +32,28 @@ impl Character {
     pub fn is_alive(&self) -> bool {
         let health = self.health.lock().unwrap();
         *health > 0
+    }
+}
+
+impl fmt::Display for Character {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Name: {},\nHealth: {},\nSkills: {}",
+            self.name,
+            *self.health.lock().unwrap(),
+            self.skills
+                .clone()
+                .into_iter()
+                .map(|s| format!(
+                    "{} {}-{} {}s",
+                    s.name,
+                    s.damage.0,
+                    s.damage.1,
+                    s.cooldown.as_secs().to_string()
+                ))
+                .collect::<Vec<String>>()
+                .join(",\n")
+        )
     }
 }

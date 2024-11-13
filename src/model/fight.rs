@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{ops::Deref, sync::Arc};
 
 use rand::{seq::IteratorRandom, thread_rng};
 use tokio::{sync::mpsc, time};
@@ -16,7 +16,7 @@ async fn skill_loop(skill: Skill, sender: mpsc::Sender<Skill>) {
     }
 }
 
-pub async fn character_attack_loop(character: Arc<Character>, opponent: Arc<Character>) {
+async fn character_attack_loop(character: Arc<Character>, opponent: Arc<Character>) {
     // Creiamo un canale per ricevere le notifiche delle skill pronte.
     let (tx, mut rx) = mpsc::channel(character.skills.len() * 2);
     let skills = character.skills.clone();
@@ -40,5 +40,24 @@ pub async fn character_attack_loop(character: Arc<Character>, opponent: Arc<Char
                 break;
             }
         }
+    }
+}
+
+pub async fn start_fight(player_one: Character, player_two: Character) -> Character {
+    let player1 = Arc::new(player_one);
+    let player2 = Arc::new(player_two);
+
+    // Avvia le task di combattimento per entrambi i personaggi
+    let player1_task = character_attack_loop(player1.clone(), player2.clone());
+    let player2_task = character_attack_loop(player2.clone(), player1.clone());
+
+    tokio::join!(player1_task, player2_task);
+    // Determina il vincitore
+    if player1.is_alive() {
+        println!("{} win!", player1.name);
+        player1.deref().clone()
+    } else {
+        println!("{} win!", player2.name);
+        player2.deref().clone()
     }
 }
