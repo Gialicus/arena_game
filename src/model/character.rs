@@ -23,6 +23,13 @@ impl Character {
         }
     }
 
+    pub fn level_up(&self, skills: Vec<Skill>) -> Self {
+        Character::new(
+            &self.name,
+            self.skills.iter().chain(skills.iter()).cloned().collect(),
+        )
+    }
+
     pub fn take_damage(&self, amount: i32) {
         let mut health = self.health.lock().unwrap();
         *health -= amount;

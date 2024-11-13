@@ -1,3 +1,4 @@
+pub mod arena;
 pub mod character;
 pub mod cooldown;
 pub mod element;
