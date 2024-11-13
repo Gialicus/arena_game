@@ -1,6 +1,6 @@
 use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng};
 
-use crate::model::{cooldown::COOLDOWNS, element::Element, skill::Skill};
+use crate::model::{character::Character, cooldown::COOLDOWNS, element::Element, skill::Skill};
 
 fn name_generator(element: &Element, rng: &mut ThreadRng) -> String {
     let prefixes = [
@@ -45,4 +45,11 @@ pub fn generate_random_skill() -> Skill {
         cooldown as u64,
         element.clone(),
     )
+}
+
+pub fn shuffle_characters(characters: Vec<Character>) -> Vec<Character> {
+    let mut rng = thread_rng();
+    let mut characters = characters;
+    characters.shuffle(&mut rng);
+    characters
 }

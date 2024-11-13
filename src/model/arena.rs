@@ -2,7 +2,10 @@ use std::sync::Arc;
 
 use futures::future::join_all;
 
-use crate::{model::fight::start_fight, utils::generator::generate_random_skill};
+use crate::{
+    model::fight::start_fight,
+    utils::generator::{generate_random_skill, shuffle_characters},
+};
 
 use super::character::Character;
 
@@ -30,7 +33,8 @@ pub async fn start_round(players: Vec<Character>) -> Vec<Character> {
 }
 
 pub async fn start_tournament(players: Vec<Character>) -> Character {
-    let first_winners = start_round(players).await;
+    let shuffled = shuffle_characters(players);
+    let first_winners = start_round(shuffled).await;
     if first_winners.len() == 1 {
         return first_winners.first().unwrap().clone();
     }
